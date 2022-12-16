@@ -2,6 +2,7 @@
 
 from __future__ import division
 import traceback
+import random
 
 # parameters used for object rotation by mouse
 mouseX_old = 0
@@ -50,39 +51,36 @@ def draw():
    
     #. Iterate starting from 0 to len(V-table), adding 3 to the iterator each time (eg 0, 3, 6, ...)Let iterator variable be c
     global flag
-    global geoTable
     if flag:
-        for c in range(0, len(vTable), 3):
+        for c in range(-1, len(vTable), 3):
+            beginShape()
+            print "we're in the table" 
+            print "len vtable", len(vTable)      
+            print "x vertex", geoTable
+            
+            vertex(geoTable[vTable[c]][0], geoTable[vTable[c]][1], geoTable[vTable[c]][2])
+            # vertex(geoTable[vTable[c+1]].x, geoTable[vTable[c+1]].y, geoTable[vTable[c+1]].z)
+            # vertex(geoTable[vTable[c+2]].x, geoTable[vTable[c+2]].y, geoTable[vTable[c+2]].z)
+
+            # vertex(geoTable[vTable[c][0]], geoTable[vTable[c][1]], geoTable[vTable[c][2]])
+            # vertex(geoTable[vTable[c+1][0]], geoTable[vTable[c+1][1]], geoTable[vTable[c+1][2]]) 
+            # vertex(geoTable[vTable[c+2][0]], geoTable[vTable[c+2][1]], geoTable[vTable[c+2][2]])
+            vTable[0].x 
+
+            endShape(CLOSE)
+
             if colFlag:
                 fill(random(255), random(255), random(255))
             else:
                 fill(255, 255, 255)
-    
-            beginShape()
-
-            
-            vertex(geoTable[vTable[c]][0], geoTable[vTable[c]][1], geoTable[vTable[c]][2])
-            vertex(geoTable[vTable[c+1]][0], geoTable[vTable[c+1]][1], geoTable[vTable[c+1]][2])
-            vertex(geoTable[vTable[c+2]][0], geoTable[vTable[c+2]][1], geoTable[vTable[c+2]][2])
-
-
             #popMatrix()
             endShape(CLOSE)
     popMatrix()
 
-    #global var to track index in vtable to track current corner
-    applyMatrix (rot_mat) 
     if currCVisible:  #weighted sum of the 3 vertices of the current triangle a
         pushMatrix()
-        currentVertex = PVector(geoTable[vTable[currC]][0], geoTable[vTable[currC]][1], geoTable[vTable[currC]][2])
-        prevVertex = PVector(geoTable[vTable[prevCorner(currC)]][0], geoTable[vTable[prevCorner(currC)]][1], geoTable[vTable[prevCorner(currC)]][2])
-        nextVertex = PVector(geoTable[vTable[nextCorner(currC)]][0], geoTable[vTable[nextCorner(currC)]][1], geoTable[vTable[nextCorner(currC)]][2])
-        prod1 = PVector.mult(currentVertex, 0.8)
-        prod2 = PVector.mult(nextVertex, 0.1)
-        prod3 = PVector.mult(prevVertex, 0.1)
-        #print(prod3)
-        sum = PVector.add(PVector.add(prod1, prod2), prod3)
-        translate(sum[0], sum[1], sum[2])
+        currentVertex = geoTable[vTable[currC]]
+        translate(currentVertex[0], currentVertex[1], currentVertex[2])
         sphere(0.1)
         popMatrix()
     
@@ -122,7 +120,6 @@ def read_mesh(filename):
         temp.append(z)
         geoTable.append(temp)
         print "vertex: ", x, y, z
-        print(geoTable)
     
     # read in the faces (vTable)
     # vTable = []
@@ -146,7 +143,7 @@ def read_mesh(filename):
 
 
     #debugging 
-    # draw()
+    draw()
     print_mesh()
 
 #Compute opposite table
@@ -187,30 +184,19 @@ def handleKeyPressed():
         flag = True
         read_mesh ('tetra.ply')
     elif key == '2':
-        #add sphere size
-        global flag
-        flag = True
         read_mesh ('octa.ply')
     elif key == '3':
-        global flag
-        flag = True
         read_mesh ('icos.ply')
     elif key == '4':
-        global flag
-        flag = True
         read_mesh ('star.ply')
     elif key == 'n': # next
-        global currC
-        currC = nextCorner(currC)
+        pass
     elif key == 'p': # previous
-        global currC
-        currC = prevCorner(currC)
+        pass
     elif key == 'o': # opposite
-        global currC
-        currC = oppositeCorner(currC)
+        pass
     elif key == 's': # swing
-        global currC
-        currC = swingCorner(currC)
+        pass
     elif key == 'd': # subdivide mesh
         global vTable, geoTable, opTable
         vTable, geoTable, opTable = subdivideMesh(vTable, geoTable, opTable)
@@ -219,16 +205,15 @@ def handleKeyPressed():
         #print "vTable", vTable
         
     elif key == 'i': # inflate mesh
-        #global geoTable
-        geoTable = inflateMesh(geoTable)
+        inflateMesh()
         
     elif key == 'r': # toggle random colors
         global colFlag
-        colFlag = not colFlag
-        
+        colFlag = True
+        pass
     elif key == 'c': # toggle showing current corner
         global currCVisible
-        currCVisible = not currCVisible
+        currCVisible = True
         
     elif key == 'q': # quit the program
         exit()
@@ -280,9 +265,6 @@ def oppositeCorner(cornerNum):
     # Use the opposite-table dictionary
     # Return O[cornerNum]
     return opTable[cornerNum]
-def swingCorner(cornerNum):
-    #return nextCorner(oppositeCorner(nextCorner(cornerNum))) #next opposite next
-    return prevCorner(oppositeCorner(prevCorner(cornerNum)))
 
 #subdivision. Need copy old vertices (gtable)(do a slice), then append afterward. 
 def subdivideMesh(vTable, geoTable, opTable):
@@ -327,13 +309,7 @@ def subdivideMesh(vTable, geoTable, opTable):
 
 def inflateMesh(geoTable):
     #normalize
-    res = []
-    for g in geoTable:
-        vert = PVector(g[0], g[1], g[2]).normalize()
-        res.append(vert)
-    print(res)
-    return res
-    
+    geoTable = norm_vertices(geoTable)
 
 
 def print_mesh():
@@ -358,13 +334,13 @@ def print_mesh():
     print ""
     print ""
 
-# def norm_vertices(vertices):
-#     for v in vertices:
-#         len = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
-#         v[0] = v[0]/len * 1
-#         v[1] = v[1]/len * 1
-#         v[2] = v[2]/len * 1
-#     return vertices
+def norm_vertices(vertices):
+    for v in vertices:
+        len = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
+        v[0] = v[0]/len * 1
+        v[1] = v[1]/len * 1
+        v[2] = v[2]/len * 1
+    return vertices
 
 class my_dictionary(dict):
  

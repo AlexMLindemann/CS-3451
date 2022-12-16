@@ -71,7 +71,7 @@ def draw():
     popMatrix()
 
     #global var to track index in vtable to track current corner
-    applyMatrix (rot_mat) 
+
     if currCVisible:  #weighted sum of the 3 vertices of the current triangle a
         pushMatrix()
         currentVertex = PVector(geoTable[vTable[currC]][0], geoTable[vTable[currC]][1], geoTable[vTable[currC]][2])
@@ -281,8 +281,7 @@ def oppositeCorner(cornerNum):
     # Return O[cornerNum]
     return opTable[cornerNum]
 def swingCorner(cornerNum):
-    #return nextCorner(oppositeCorner(nextCorner(cornerNum))) #next opposite next
-    return prevCorner(oppositeCorner(prevCorner(cornerNum)))
+    return nextCorner(oppositeCorner(nextCorner(cornerNum)))
 
 #subdivision. Need copy old vertices (gtable)(do a slice), then append afterward. 
 def subdivideMesh(vTable, geoTable, opTable):

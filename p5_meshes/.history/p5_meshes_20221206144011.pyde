@@ -13,7 +13,6 @@ opTable = {}
 colFlag = False
 currC = 0
 currCVisible = False
-flag = False
 # initalize things
 def setup():
     size (800, 800, OPENGL)
@@ -23,8 +22,9 @@ def setup():
 
 # draw the current mesh (you will modify parts of this routine)
 def draw():
+    
     background (100, 100, 180)    # clear the screen to black
-    randomSeed(0)
+
     perspective (PI*0.2, 1.0, 0.01, 1000.0)
     camera (0, 0, 6, 0, 0, 0, 0, 1, 0)    # place the camera in the scene
     
@@ -40,49 +40,39 @@ def draw():
 
     stroke (0)                    # draw polygons with black edges
     fill (200, 200, 200)          # set the polygon color to white
-    ambient (200, 200, 200) 
+    ambient (200, 200, 200)
     specular (0, 0, 0)            # turn off specular highlights
     shininess (1.0)
     
     applyMatrix (rot_mat)   # rotate the object using the global rotation matrix
-    
+
     # THIS IS WHERE YOU SHOULD DRAW YOUR MESH
-   
-    #. Iterate starting from 0 to len(V-table), adding 3 to the iterator each time (eg 0, 3, 6, ...)Let iterator variable be c
-    global flag
-    global geoTable
-    if flag:
-        for c in range(0, len(vTable), 3):
-            if colFlag:
-                fill(random(255), random(255), random(255))
-            else:
-                fill(255, 255, 255)
+    beginShape()
+    vertex (-1.0,  1.0, 0.0)
+    vertex ( 1.0,  1.0, 0.0)
+    vertex ( 0.0, -1.0, 0.0)
+    endShape(CLOSE)
     
-            beginShape()
-
-            
-            vertex(geoTable[vTable[c]][0], geoTable[vTable[c]][1], geoTable[vTable[c]][2])
-            vertex(geoTable[vTable[c+1]][0], geoTable[vTable[c+1]][1], geoTable[vTable[c+1]][2])
-            vertex(geoTable[vTable[c+2]][0], geoTable[vTable[c+2]][1], geoTable[vTable[c+2]][2])
-
-
-            #popMatrix()
-            endShape(CLOSE)
     popMatrix()
+    #. Iterate starting from 0 to len(V-table), adding 3 to the iterator each time (eg 0, 3, 6, ...)Let iterator variable be c
+    # for c in range(0, len(vTable), 3):
+    #     beginSHape()
+    #     if colFlag:
+    #         fill(random(255), random(255), random(255))
+    #     else:
+    #         fill(255, 255, 255)
 
-    #global var to track index in vtable to track current corner
-    applyMatrix (rot_mat) 
+    #     vertex(geoTable[vTable[c]][0], geoTable[vTable[c]][1], geoTable[vTable[c]][2])
+    #     vertex(geoTable[vTable[c+1]][0], geoTable[vTable[c+1]][1], geoTable[vTable[c+1]][2])
+    #     vertex(geoTable[vTable[c+2]][0], geoTable[vTable[c+2]][1], geoTable[vTable[c+2]][2])
+
+    # endShape(CLOSE)
+    # popMatrix()
+
     if currCVisible:  #weighted sum of the 3 vertices of the current triangle a
         pushMatrix()
-        currentVertex = PVector(geoTable[vTable[currC]][0], geoTable[vTable[currC]][1], geoTable[vTable[currC]][2])
-        prevVertex = PVector(geoTable[vTable[prevCorner(currC)]][0], geoTable[vTable[prevCorner(currC)]][1], geoTable[vTable[prevCorner(currC)]][2])
-        nextVertex = PVector(geoTable[vTable[nextCorner(currC)]][0], geoTable[vTable[nextCorner(currC)]][1], geoTable[vTable[nextCorner(currC)]][2])
-        prod1 = PVector.mult(currentVertex, 0.8)
-        prod2 = PVector.mult(nextVertex, 0.1)
-        prod3 = PVector.mult(prevVertex, 0.1)
-        #print(prod3)
-        sum = PVector.add(PVector.add(prod1, prod2), prod3)
-        translate(sum[0], sum[1], sum[2])
+        currentVertex = geoTable[vTable[currC]]
+        translate(currentVertex[0], currentVertex[1], currentVertex[2])
         sphere(0.1)
         popMatrix()
     
@@ -91,9 +81,6 @@ def draw():
 # read in a mesh file (this needs to be modified)
 def read_mesh(filename):
     global vTable, geoTable, opTable
-    vTable = []
-    geoTable = []
-    opTable = {}
     
     fname = "data/" + filename
     # read in the lines of a file
@@ -122,7 +109,6 @@ def read_mesh(filename):
         temp.append(z)
         geoTable.append(temp)
         print "vertex: ", x, y, z
-        print(geoTable)
     
     # read in the faces (vTable)
     # vTable = []
@@ -146,7 +132,6 @@ def read_mesh(filename):
 
 
     #debugging 
-    # draw()
     print_mesh()
 
 #Compute opposite table
@@ -183,52 +168,38 @@ def keyPressed():
 # process key presses (call your own routines!)
 def handleKeyPressed():
     if key == '1':
-        global flag
-        flag = True
         read_mesh ('tetra.ply')
     elif key == '2':
-        #add sphere size
-        global flag
-        flag = True
         read_mesh ('octa.ply')
     elif key == '3':
-        global flag
-        flag = True
         read_mesh ('icos.ply')
     elif key == '4':
-        global flag
-        flag = True
         read_mesh ('star.ply')
     elif key == 'n': # next
-        global currC
-        currC = nextCorner(currC)
+        pass
     elif key == 'p': # previous
-        global currC
-        currC = prevCorner(currC)
+        pass
     elif key == 'o': # opposite
-        global currC
-        currC = oppositeCorner(currC)
+        pass
     elif key == 's': # swing
-        global currC
-        currC = swingCorner(currC)
+        pass
     elif key == 'd': # subdivide mesh
-        global vTable, geoTable, opTable
-        vTable, geoTable, opTable = subdivideMesh(vTable, geoTable, opTable)
         print_mesh()
-        #print "optable", opTable
-        #print "vTable", vTable
-        
+        #update global variables by calling subdivide 
+        subdivideMesh(vTable, geoTable, opTable)
+        print "optable", opTable
+        print "vTable", vTable
+        #draw()
     elif key == 'i': # inflate mesh
-        #global geoTable
-        geoTable = inflateMesh(geoTable)
+        inflateMesh()
         
     elif key == 'r': # toggle random colors
         global colFlag
-        colFlag = not colFlag
-        
+        colFlag = True
+        pass
     elif key == 'c': # toggle showing current corner
         global currCVisible
-        currCVisible = not currCVisible
+        currCVisible = True
         
     elif key == 'q': # quit the program
         exit()
@@ -280,9 +251,6 @@ def oppositeCorner(cornerNum):
     # Use the opposite-table dictionary
     # Return O[cornerNum]
     return opTable[cornerNum]
-def swingCorner(cornerNum):
-    #return nextCorner(oppositeCorner(nextCorner(cornerNum))) #next opposite next
-    return prevCorner(oppositeCorner(prevCorner(cornerNum)))
 
 #subdivision. Need copy old vertices (gtable)(do a slice), then append afterward. 
 def subdivideMesh(vTable, geoTable, opTable):
@@ -291,13 +259,13 @@ def subdivideMesh(vTable, geoTable, opTable):
     newGeoTable = geoTable[:]
     #newVTable = vTable[:]
     newVTable = []
-    #numTris = len(vTable) // 3
+    numTris = len(vTable) // 2
 
     
     for a, b in newOTable.iteritems():
         if a < b:
             endPoint1 = (geoTable[vTable[prevCorner(a)]])
-            endPoint2 = (geoTable[vTable[nextCorner(a)]])
+            endPoint2 = (geoTable[vTable[nextCorner(b)]])
             endPoint1 = PVector(endPoint1[0], endPoint1[1], endPoint1[2])
             endPoint2 = PVector(endPoint2[0], endPoint2[1], endPoint2[2])
             type(endPoint2)
@@ -306,8 +274,6 @@ def subdivideMesh(vTable, geoTable, opTable):
             newGeoTable.append(midpoint)
             midpoints[a] = midpointIndex
             midpoints[b] = midpointIndex
-            #print "midpoint", midpoint
-            #print "endpoints", endPoint1, endPoint2 
             #Drawing Current corner. Weighted sum of corner.next, corner.prev, and corner 
             #offet = (constant * corner vertex + midpoint) / another constant
     k = 0
@@ -319,21 +285,16 @@ def subdivideMesh(vTable, geoTable, opTable):
                         midpoints[z], vTable[y], midpoints[x],
                         midpoints[y], midpoints[x], vTable[z],
                         midpoints[x], midpoints[y], midpoints[z]])
-      
+        k += 1
+    print(k)
     print(len(newVTable))
-    #print "newVTable", newVTable
+    print "newVTable", newVTable
     newOTable = computeOTable(newGeoTable, newVTable)
     return newVTable, newGeoTable, newOTable #or return computeOTable()
 
 def inflateMesh(geoTable):
     #normalize
-    res = []
-    for g in geoTable:
-        vert = PVector(g[0], g[1], g[2]).normalize()
-        res.append(vert)
-    print(res)
-    return res
-    
+    geoTable = norm_vertices(geoTable)
 
 
 def print_mesh():
@@ -358,13 +319,13 @@ def print_mesh():
     print ""
     print ""
 
-# def norm_vertices(vertices):
-#     for v in vertices:
-#         len = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
-#         v[0] = v[0]/len * 1
-#         v[1] = v[1]/len * 1
-#         v[2] = v[2]/len * 1
-#     return vertices
+def norm_vertices(vertices):
+    for v in vertices:
+        len = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
+        v[0] = v[0]/len * 1
+        v[1] = v[1]/len * 1
+        v[2] = v[2]/len * 1
+    return vertices
 
 class my_dictionary(dict):
  
@@ -376,4 +337,97 @@ class my_dictionary(dict):
   def add(self, key, value):
     self[key] = value
 
-# 
+class PVector:
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __repr__(self):
+        return "PVector(%f, %f, %f)" % (self.x, self.y, self.z)
+
+    def __add__(self, other):
+        return PVector.add(self, other)
+
+    def __mul__(self, n):
+        return PVector.mult(self, n)
+
+    def __rmul__(self, n):
+        return PVector.mult(self, n)
+
+    def mag(self):
+        return sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+
+    def magSq(self):
+        return self.x * self.x + self.y * self.y + self.z * self.z
+
+    def copy(self):
+        return PVector(self.x, self.y, self.z)
+
+    def div(self, n):
+        return PVector(
+            a.x / n,
+            a.y / n,
+            a.z / n,
+        )
+
+    @staticmethod
+    def dist(a, b):
+        return PVector.sub(a, b).mag()
+
+    @staticmethod
+    def add(a, b):
+        return PVector(
+            a.x + b.x,
+            a.y + b.y,
+            a.z + b.z,
+        )
+
+    @staticmethod
+    def sub(a, b):
+        return PVector(
+            a.x - b.x,
+            a.y - b.y,
+            a.z - b.z,
+        )
+
+    @staticmethod
+    def mult(a, n):
+        return PVector(
+            n * a.x,
+            n * a.y,
+            n * a.z,
+        )
+
+    @staticmethod
+    def pairwise_mult(a, b):
+        return PVector(
+            a.x * b.x,
+            a.y * b.y,
+            a.z * b.z,
+        )
+
+    @staticmethod
+    def dot(a, b):
+        return a.x * b.x + a.y * b.y + a.z * b.z
+
+    @staticmethod
+    def cross(a, b):
+        return PVector(
+            a.y * b.z - a.z * b.y,
+            a.z * b.x - a.x * b.z,
+            a.x * b.y - a.y * b.x,
+        )
+
+    def normalize(self):
+        mag = sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+        self.x /= mag
+        self.y /= mag
+        self.z /= mag
+        return self
+
+    def get(self):
+        return PVector(self.x, self.y, self.z)
+
+    def __getitem__(self, t):
+        return getattr(self, ('x', 'y', 'z')[t])

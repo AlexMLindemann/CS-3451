@@ -50,7 +50,6 @@ def draw():
    
     #. Iterate starting from 0 to len(V-table), adding 3 to the iterator each time (eg 0, 3, 6, ...)Let iterator variable be c
     global flag
-    global geoTable
     if flag:
         for c in range(0, len(vTable), 3):
             if colFlag:
@@ -71,17 +70,17 @@ def draw():
     popMatrix()
 
     #global var to track index in vtable to track current corner
-    applyMatrix (rot_mat) 
+
     if currCVisible:  #weighted sum of the 3 vertices of the current triangle a
         pushMatrix()
-        currentVertex = PVector(geoTable[vTable[currC]][0], geoTable[vTable[currC]][1], geoTable[vTable[currC]][2])
-        prevVertex = PVector(geoTable[vTable[prevCorner(currC)]][0], geoTable[vTable[prevCorner(currC)]][1], geoTable[vTable[prevCorner(currC)]][2])
-        nextVertex = PVector(geoTable[vTable[nextCorner(currC)]][0], geoTable[vTable[nextCorner(currC)]][1], geoTable[vTable[nextCorner(currC)]][2])
+        currentVertex = geoTable[vTable[currC]]
+        prevVertex = geoTable[vTable[prevCorner(currC)]]
+        nextVertex = geoTable[vTable[nextCorner(currC)]]
+        currentVertex * 0.8 + nextVertex * 0.1 + previousVertex * 0.1
         prod1 = PVector.mult(currentVertex, 0.8)
         prod2 = PVector.mult(nextVertex, 0.1)
         prod3 = PVector.mult(prevVertex, 0.1)
-        #print(prod3)
-        sum = PVector.add(PVector.add(prod1, prod2), prod3)
+        sum = PVector.add(prod3, PVector.add(prod1, prod2))
         translate(sum[0], sum[1], sum[2])
         sphere(0.1)
         popMatrix()
@@ -122,7 +121,6 @@ def read_mesh(filename):
         temp.append(z)
         geoTable.append(temp)
         print "vertex: ", x, y, z
-        print(geoTable)
     
     # read in the faces (vTable)
     # vTable = []
@@ -187,7 +185,6 @@ def handleKeyPressed():
         flag = True
         read_mesh ('tetra.ply')
     elif key == '2':
-        #add sphere size
         global flag
         flag = True
         read_mesh ('octa.ply')
@@ -219,8 +216,7 @@ def handleKeyPressed():
         #print "vTable", vTable
         
     elif key == 'i': # inflate mesh
-        #global geoTable
-        geoTable = inflateMesh(geoTable)
+        inflateMesh()
         
     elif key == 'r': # toggle random colors
         global colFlag
@@ -281,8 +277,7 @@ def oppositeCorner(cornerNum):
     # Return O[cornerNum]
     return opTable[cornerNum]
 def swingCorner(cornerNum):
-    #return nextCorner(oppositeCorner(nextCorner(cornerNum))) #next opposite next
-    return prevCorner(oppositeCorner(prevCorner(cornerNum)))
+    return nextCorner(oppositeCorner(nextCorner(cornerNum)))
 
 #subdivision. Need copy old vertices (gtable)(do a slice), then append afterward. 
 def subdivideMesh(vTable, geoTable, opTable):
@@ -327,13 +322,7 @@ def subdivideMesh(vTable, geoTable, opTable):
 
 def inflateMesh(geoTable):
     #normalize
-    res = []
-    for g in geoTable:
-        vert = PVector(g[0], g[1], g[2]).normalize()
-        res.append(vert)
-    print(res)
-    return res
-    
+    geoTable = norm_vertices(geoTable)
 
 
 def print_mesh():
@@ -358,13 +347,13 @@ def print_mesh():
     print ""
     print ""
 
-# def norm_vertices(vertices):
-#     for v in vertices:
-#         len = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
-#         v[0] = v[0]/len * 1
-#         v[1] = v[1]/len * 1
-#         v[2] = v[2]/len * 1
-#     return vertices
+def norm_vertices(vertices):
+    for v in vertices:
+        len = math.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
+        v[0] = v[0]/len * 1
+        v[1] = v[1]/len * 1
+        v[2] = v[2]/len * 1
+    return vertices
 
 class my_dictionary(dict):
  

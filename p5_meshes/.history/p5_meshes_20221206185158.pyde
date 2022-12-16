@@ -50,7 +50,6 @@ def draw():
    
     #. Iterate starting from 0 to len(V-table), adding 3 to the iterator each time (eg 0, 3, 6, ...)Let iterator variable be c
     global flag
-    global geoTable
     if flag:
         for c in range(0, len(vTable), 3):
             if colFlag:
@@ -71,7 +70,7 @@ def draw():
     popMatrix()
 
     #global var to track index in vtable to track current corner
-    applyMatrix (rot_mat) 
+
     if currCVisible:  #weighted sum of the 3 vertices of the current triangle a
         pushMatrix()
         currentVertex = PVector(geoTable[vTable[currC]][0], geoTable[vTable[currC]][1], geoTable[vTable[currC]][2])
@@ -122,7 +121,6 @@ def read_mesh(filename):
         temp.append(z)
         geoTable.append(temp)
         print "vertex: ", x, y, z
-        print(geoTable)
     
     # read in the faces (vTable)
     # vTable = []
@@ -219,8 +217,7 @@ def handleKeyPressed():
         #print "vTable", vTable
         
     elif key == 'i': # inflate mesh
-        #global geoTable
-        geoTable = inflateMesh(geoTable)
+        inflateMesh(geoTable)
         
     elif key == 'r': # toggle random colors
         global colFlag
@@ -281,8 +278,7 @@ def oppositeCorner(cornerNum):
     # Return O[cornerNum]
     return opTable[cornerNum]
 def swingCorner(cornerNum):
-    #return nextCorner(oppositeCorner(nextCorner(cornerNum))) #next opposite next
-    return prevCorner(oppositeCorner(prevCorner(cornerNum)))
+    return nextCorner(oppositeCorner(nextCorner(cornerNum)))
 
 #subdivision. Need copy old vertices (gtable)(do a slice), then append afterward. 
 def subdivideMesh(vTable, geoTable, opTable):
@@ -327,13 +323,7 @@ def subdivideMesh(vTable, geoTable, opTable):
 
 def inflateMesh(geoTable):
     #normalize
-    res = []
-    for g in geoTable:
-        vert = PVector(g[0], g[1], g[2]).normalize()
-        res.append(vert)
-    print(res)
-    return res
-    
+    geoTable = list.normalize(geoTable)
 
 
 def print_mesh():
